@@ -1,0 +1,10 @@
+*.jpg
+ceiling_socket/cmake-build-debug/*
+ceiling_socket/CMakeFiles/*
+ceiling_socket/CMakeCache.txt
+ceiling_socket/.idea/*
+ceiling_socket/cmake_*
+ceiling_socket/*.cbp
+ceiling_socket/most*
+ceiling_socket/Makefile*
+central_server/blankCourseRun1/

@@ -1,0 +1,3 @@
+/home/pi/arucoTest/CMakeFiles/edit_cache.dir
+/home/pi/arucoTest/CMakeFiles/rebuild_cache.dir
+/home/pi/arucoTest/CMakeFiles/arucoTest.dir

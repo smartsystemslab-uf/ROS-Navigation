@@ -1,0 +1,103 @@
+from flask import Flask, jsonify, request
+from threading import Thread
+
+import json, pickle, requests, socket, time, threading, traceback, logging
+from classDefs import  *
+
+
+
+app = Flask(__name__)
+
+myIp = (([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")] or [[(s.connect(("8.8.8.8", 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) + ["no IP found"])[0]
+
+with open('botInfo.txt', 'rb') as rf:
+	line = rf.readline()
+	line.rstrip('\n')
+	myType = line
+	line = rf.readline()
+	myAruco = line
+
+with open('hostIP.txt', 'rb') as rf:
+	line = rf.readline()
+	line.rstrip('\n')
+	line.rstrip('\r')
+	myHost = line
+
+myBot = Bot(myIp, myType, 'NOT_INITIALIZED', myAruco)
+#myHost = Host('192.168.1.145/')
+
+def selfInitialize(repeat):
+	global myHost
+	global myBot
+	#url = 'http://' + myHost + '/bots/'
+	url = 'http://192.168.1.145:5000/bots/'
+	print(url)
+	payload = {'endPointAddress' : myBot.getAddress(), 'botType' : myBot.getBotType(), 'arucoNumber' : myBot.getArucoNumber()}
+	headers = {'content-type': 'application/json'}
+
+	try:
+		r = requests.post(url, data=json.dumps(payload), headers=headers)
+		resp = r.json()
+		myBot.setStatus(resp[0]['STATUS'])
+		print(resp)
+		if((myBot.getStatus() == 'NOT_INITIALIZED') and (repeat > 1)):
+			selfInitialize(repeat-1)
+		myBot.setStatus('INITIALIZED')   #FIX THIS. WILL INITIALIZE REGARDLESS
+	except Exception as e:
+		#print('Couldn't reach the server. Trying again.')
+		logging.error(traceback.format_exc())
+
+def simpleRequest(address, requestNum):
+	url = 'http://192.168.1.145:5000/stress/'
+	print(address, requestNum)
+	payload = {'endPointAddress' : myBot.getAddress(), 'botType' : myBot.getBotType(), 'arucoNumber' : myBot.getArucoNumber(), 'requestNum' : requestNum}
+	headers = {'content-type': 'application/json'}
+	try:
+		r = requests.post(url, data=json.dumps(payload), headers=headers)
+		resp = r.json()
+		myBot.setStatus(resp[0]['requestNum'])
+		print(resp)
+	except Exception as e:
+		print('Could not reach the camera. Try again.')
+		logging.error(traceback.format_exc())
+
+def stressCamera(address, numRequests):
+	for _ in range(numRequests):
+		pollThread = Thread(target=simpleRequest, args=(address, _))
+		pollThread.setDaemon(True)
+		pollThread.start()
+			
+
+selfInitialize(2)
+stressCamera(myHost, 1000)
+
+while(myBot.getStatus() == 'NOT_INITIALIZED'):
+	time.sleep(5)
+	selfInitialize(2)
+
+##ENDPOINTS
+@app.route('/', methods=['GET'])
+def test():
+
+	return jsonify({'Bot: ' : myBot.getBotType(), 'EndPoint ' : myBot.getAddress()})
+
+@app.route('/status/', methods=['GET'])
+def requestBotStatus():
+
+	return jsonify([{'endPointAddress' : myBot.getAddress(), 'botType' : myBot.getBotType(), 'status' : myBot.getStatus()}])
+
+@app.route('/host/', methods=['PUT'])
+def setHostAddress():
+	hostAddressReceived = request.get_json(force=True)
+
+	myHost.setAddress(hostAddressReceived['hostAddress'])
+	
+	return jsonify({'BotAddress' : myBot.getAddress(), 'STATUS' : 'SUCCESS', 'RecievedAddress' : myHost.getAddress()})
+
+
+
+if __name__ == '__main__':
+
+	#app.run(debug=True, port=8080)
+	#app.run(debug=True, host=myIp)
+	app.run(host=myIp)

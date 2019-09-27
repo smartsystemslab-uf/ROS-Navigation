@@ -1,0 +1,3 @@
+#!/bin/sh
+echo "Turning Camera On"
+modprobe bcm2835-v412
