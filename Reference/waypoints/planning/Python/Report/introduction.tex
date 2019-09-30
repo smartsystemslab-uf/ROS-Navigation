@@ -1,0 +1,7 @@
+\section{Introduction}
+Indoor robot navigation has become a frequently researched area due to the increase of automation to augment jobs within warehouses and many other areas. This navigation is typically a combination of global planning and local planning, where the ground robots execute the results of the local plans. According to literature, \cite{PlanningSurveyParker}, one of the standards for robot navigation is to perform all planning on a central server which distributes instructions to each robot. From there, each robot will execute the path simultaneously since the central server calculates the paths relative to others in order to prevent deadlocks. The primary issue with this method is the single point of failure created by the central server.
+Due to this, any downtime suffered by the central server limits or entirely halts all autonomous movement. 
+
+
+In this work I show a system in which a hierarchical graph is used within a decentralized system to allow pathing in dynamic environments. This allows for the reduction of load on the robots that a centralized system provides while maintaining the efficiency of a decentralized system. By removing planning from the robots, it allows the robot to focus on supplemental tasks such as obstacle avoidance or cargo handling. Furthermore, as the regions are overseen by cameras, any environmental changes can be monitored and handled without requiring a robot to traverse the region. With this, robots can traverse only paths that are most optimal at all times. 
+

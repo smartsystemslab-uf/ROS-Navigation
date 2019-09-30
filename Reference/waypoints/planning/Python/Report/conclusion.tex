@@ -1,0 +1,8 @@
+\section{Conclusion}
+In this work, I defined and implemented the base for a system which would allow multi-agent decentralized path planning through a static or dynamic area. As intended, this is the base navigation system on which any number of specific tasks could be implemented using various robots. Areas in which this method is superior to existing methods were discussed.
+
+I presented results obtained via simulation showing that this type of system design is possible. I discussed multiple problems with this implementation and ways they can potentially be fixed or mitigated in future work.
+
+Two different versions of D-A* were compared to show improvement over the original. This implementation allows an entire path to be calculated at once rather than regenerating a path upon entering a new region as several referenced works did. This saves time by reducing how many paths are generated through a region by a single robot, and, in the case of only pathing through one camera at a time, outperforms a greedy-based search over 97\% of the time.
+
+Unfortunately I was not able to put together an implementation of deadlock for this project. In lieu of this, I presented ideas used in other works and explained why I believe they could be effective deadlock prevention in this system.

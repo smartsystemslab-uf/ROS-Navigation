@@ -776,15 +776,15 @@ int main(int argc, char **argv) {
               if (to_string(myID - '0') == to_string(goalLocation)) { // if im goal
                 if (std::isdigit(srcCam[0])){
                   nextCam = srcCam;
-					for (unsigned int i = 0; i < neighbors.size(); i++) {
-						if (grid[neighbors[i].gridRow][neighbors[i].gridCol] == nextCam) {
-						  nextCam = to_string(neighbors[i].side);
-						  break;
-						}
-					  }
-				}
-                else
-                  nextCam = "1"; // final pivot is to my neighbor on the right arbitrarily
+									for (unsigned int i = 0; i < neighbors.size(); i++) {
+										if (grid[neighbors[i].gridRow][neighbors[i].gridCol] == nextCam) {
+										  nextCam = to_string(neighbors[i].side);
+										  break;
+										}
+									  }
+								}
+              else
+                nextCam = "1"; // final pivot is to my neighbor on the right arbitrarily
                 path = doPointPathFinding(robX, robY, goalX, goalY, alg);
                 bestPath = path;
                 imwrite("pathOnBinary.jpg", openClose);

@@ -1,0 +1,69 @@
+\section{Multi-Agent}
+In a warehouse style environment, many things are being moved throughout the facility at any given time. If only a single robot were available to automate this process, it would be a highly ineffective system. Either that robot performs all tasks, creating a slow serial system, or humans still perform the majority of tasks, creating a hardly autonomous system. Therefore, it is necessary to have some arbitrary number of robots performing tasks in parallel for the system to be effective.
+\subsection{Method}
+Unfortunately, I do not have a warehouse scale facility to build and test this system in. Given that, the only way to implement and test what would be a multi-agent system is to use a multithreaded implementation.
+
+In this implementation, each thread would be considered a path requested by a robot. Each thread has its own instance of data relating to the path being calculated. This includes cost, node parents, start location, end location, etc. 
+
+In an attempt to stay true to the system, only one instance of the graph is used. This means that every thread will be accessing the "true" ceiling node rather than a copy of it. It also means the environment will be akin to a shared memory system. Because of this, any time a thread accesses a camera for information, it will need to ensure that the data on the relevant portions of the system are of its instance. This requires the use of locks in these situations. Aside from the addition of locks, the only change to D-A* is setting node information using local instance values, and setting local instance values using calculations performed on nodes.
+
+
+Initially, I was setting the value of every node in the graph to the local instance values. As expected, this is horribly inefficient. It then occurred to me that the only nodes needing to be set are those in the open set. This is because the only nodes the algorithm is interested in are those on the open set. Any node on the closed set has already set its final values to the local instance. Any node not contained in a set has not yet been discovered and is therefore irrelevant. The only nodes being modified and used are those on the open set. However, it is necessary to set all nodes on the closed set with local instance values before rebuilding the path. If this is not done, the path information will be invalid. 
+
+This change greatly increased the speedup as superfluous operations were removed. With that, I present the modifications to D-A* to allow multithreading in Algorithm \ref{MTD-A*}. As the open set and priority queue contain the same nodes and used similarly, I have not differentiated between the two up to this point. However, in this implementation, there is one portion where it is important to specify the distinction. Therefore, I have added one line where the priority queue and open set are handled in a very specific order.
+
+
+\begin{algorithm}
+\caption{MultiThreaded D-A*}
+\label{MTD-A*}
+\begin{algorithmic}[1]
+\REQUIRE \ \\
+Start Camera, $C_S$ \\
+Goal Camera, $C_G$ \\
+Start Point $P_S$ in $C_S$
+\STATE set instance values for $C_S$
+\STATE add $C_S$ to \textit{openSet}
+\WHILE{\textit{openSet} is not empty}
+	\STATE lock.acquire
+	\STATE setNodes(\textit{openset})
+	\STATE \textit{$N_C$} = \textit{openSet.pop}
+	\STATE lock.release
+	\IF{\textit{$N_C$} is $C_G$}
+		\STATE add $N_C$ to \textit{closedset}
+		\STATE lock.acquire
+		\STATE setNodes(\textit{closedset})
+		\RETURN $C_S$.rebuild\_path()
+		\STATE lock.release
+	\ENDIF
+	\STATE let \textit{neighbors} be an initially empty list
+\FOR{each \textit{neighbor} of \textit{$N_C$}}
+	\IF{\textit{neighbor} in \textit{closedSet}}
+		\STATE \textbf{continue}
+	\ENDIF
+	\IF{\textit{neighbor} not in \textit{openSet}}
+		\STATE add \textit{neighbor} to \textit{openSet}
+		\STATE lock.acquire
+		\STATE setNodes(\textit{openset})
+		\STATE add neighbor to priority queue
+		\STATE lock.release
+	\ENDIF
+	\STATE add \textit{neighbor} to \textit{neighbors}
+\ENDFOR	
+\STATE lock.acquire
+\STATE setNodes(openset)	 
+\STATE $C_S$.getNeighborInfo(\textit{neighbors}, $N_C$, $C_G$)
+\STATE setLocalInstanceValues(\textit{neighbors})
+\STATE lock.release
+\STATE \textit{closedSet}.add(\textit{$N_C$})
+\STATE \textit{openSet}.remove(\textit{$N_C$})
+\ENDWHILE
+\RETURN failure
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Issues}
+This implementation was done in Python which comes with one main problem in regards to this system. When using a priority queue, any operation on the queue will resort the queue. By doing this, a problem is created in this system in that the nodes on each thread's queue are the "true" nodes rather than a local copy. If a thread updates a value on some node, then the next queue operation of a different thread whose queue contains that node will invalidate the queue.
+
+Assume we have two threads, $A$ and $B$. Assume we have three nodes, $N_1, N_2,$ and $N_3$, whose costs are $7, 3,$ and $1$ respectively on thread $A$. If all of these nodes are inserted onto $A$'s queue, they will be in the order ${N_3, N_2, N_1}$. Suppose $B$ the cost of $N_1$ for $B$ is $2$. The cost value of $N_1$ will updated to $2$ and inserted into $B$'s queue. Upon doing this, the nodes will be in the order ${N_3, N_1, N_2}$ for $B$. At this point in time, $A$'s queue is still intact as no operations have been performed. Suppose $A$ then performs a GET call on the queue. Even though $N_1$ was inserted into $A$'s queue with a cost of $7$, the cost on $N_1$ is currently $2$ after $B$'s update. Therefore, after the GET call on $A$'s queue, the order will now be ${N_1, N_2}$. 
+
+This problem causes a severe slowdown because there is a now a requirement to reinitialize the instance values of a thread onto all relevant nodes any time a queue operation is required. It is equivalent to a context switch on a processor. Due to the nature of A*, queue operations happen often which leads to several "context switches". Since each switch is a slow process, it is actually slower to allow every thread to attempt a path at once rather than in serial.The ability of the system to operate as multi-agent is not affected as several robots can still be given paths to be traversed simultaneously. It is, however, more efficient to calculate the paths one after another rather than in parallel.

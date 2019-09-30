@@ -1,0 +1,2 @@
+Cost	Requests	Runtime
+1235.211	0.00619531726837	

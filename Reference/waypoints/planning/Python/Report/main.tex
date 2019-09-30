@@ -1,0 +1,103 @@
+\documentclass{article}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usepackage{lipsum}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{multirow}
+\usepackage{subcaption}
+\usepackage{pgfplots}
+
+\usepackage{amsmath}
+\usepackage{algorithmic}
+\usepackage{array}
+
+\usepackage[margin=1.5in]{geometry}
+%\usepackage[pdftex]{graphicx}
+\usetikzlibrary{positioning,automata, calc}
+
+
+\graphicspath{{./images/}}
+\DeclareGraphicsExtensions{.jpeg,.png,.jpg}
+%\pagestyle{fancy}
+%\lhead{Graph Theory}
+%\chead{\today}
+%\rhead{Andrew Felder}
+
+\begin{document}
+%\author{Andrew Felder}
+%\title{Homework}
+%\date{\today}
+\input{titlepage.tex}
+\input{abstract.tex}
+\newpage
+\tableofcontents
+\newpage
+\input{introduction.tex}
+\input{LitReview.tex}
+\input{ProblemStatement.tex}
+\input{Astar.tex}
+\input{mulithreading.tex}
+\input{results.tex}
+\input{futurework.tex}
+\input{conclusion.tex}
+\input{acknowledgements.tex}
+
+
+\bibliographystyle{IEEEtran}
+\begin{thebibliography}{60} % FIXME update this number to the amount of references used %
+
+\bibitem{DeadlockDigani}
+V.~Digani, L.~Sabattini, C.~Secchi, and C.~Fantuzzi. "Hierarchical  Traffic Control for Partially Decentralized Coordination of Multi AGV Systems in Industrial Environments." \emph{Proceedings of the IEEE International Conference On Robotics \& Automation (ICRA), 2014}., pp.6144-6149.
+
+\bibitem{DeadlockJager}
+M.~Jager and B.~Nebel. "Decentralized collision avoidance, deadlock detection, and deadlock resolution for multiple mobile robots." \emph{Proceedings of the IEEE/RSJ International Conference on Intelligent Robots and Systems, 2001}., vol. 3, 2001, pp. 1213-1219 vol.3.
+
+\bibitem{DeadlockDraganjac}
+I.~Draganjac, D.~Mikli{\'c}, Z.~Kova{\v c}i{\'c}, G.~Vasiljevi{'c}, S.~Bogdan. "Decentralized Control of Multi-AGV Systems in Autonomous Warehousing Applications." \emph{Proceedings of the IEEE Transactions on Automation Science and Engineering, 2016}., vol. 13, no. 4, pp. 1433-1447.
+
+\bibitem{WaypointJia}
+D.~Jia, C.~Hu, K.~Qin, and X.Cui. "Planar Waypoint Generation and Path Finding in Dynamic Environment." \emph{Proceedings of the International Conference on Identification, Information, and Knowledge in the Internet of Things, 2014}., pp. 206-211.
+
+\bibitem{LaValleAlgorithms}
+J.~Yu and S.~LaValle. "Optimal Multi-Robot Path Planning on Graphs: Complete Algorithms and Effective Heuristics." CoRR, abs/1507.03290, July 2015.
+
+\bibitem{FTC-A}
+C.~Zhong, S.~Liu, B.~Zhang, Q.~Lu, J.~Wang, Q.~Wu, and F.~Gao. "A Fast On-line Global Path Planning Algorithm Based on Regionalized Roadmap for Robot Navigation." IFAC-PapersOnLine, vol. 50, issue 1, pp. 319-324, July 2017.
+
+\bibitem{DecentralizedPlanningVelagapudi}
+P.~Velagapudi, K.~Sycara, and P.~Scerri. "Decentralized prioritized planning in large multirobot teams." \emph{2010 IEEE/RSJ International Conference on Intelligent Robots and Systems, 2010}., pp. 4603-4609.
+
+\bibitem{PlanningSurveyParker}
+L.E.~Parker. "Path Planning and Motion Coordination in Multiple Mobile Robot Teams." \emph{Encyclopedia of complexity and system science, 2009}., pp. 5783-5800.
+
+%\bibitem{MeanShiftComaniciu}
+%D.~Comaniciu, and P.~Meer. "Mean Shift: A Robust Approach Toward Feature Space Analysis." \emph{IEEE Transactions on pattern analysis and machine intelligence}., vol. 24, no. 5, May 2002.
+
+\bibitem{WaypointVideoGames}
+X.~Cui, and H.~Shi. "A*-based pathfinding in modern computer games." \emph{International Journal of Computer Science and Network Security}., vol. 11, no. 1, pp. 125-130, 2011.
+
+\bibitem{CTF-A}
+J.Y.~Lee, and W.~Yu. "A Coarse-to-Fine Approach for Fast Path Finding for Mobile Robots." \emph{Proceedings from IEEE/RSJ International Conference on Intelligent Robots and Systems, 2009}., pp. 5414-5419. 
+
+%\bibitem{FranzMS}
+%F.J.~Streit, M.J.H.~Pantho, C.~Bobda, C.~Roullet. "Vision-Based Path Construction and Maintenance for Indoor Guidance of Autonomous Ground Vehicles Based on Collaborative Smart Cameras." \emph{Proceedings of the 10th International Conference on Distributed Smart Camera, 2016}., pp. 44-49.
+
+\bibitem{SLAM}
+M.G.~Dissanayake, P.~Newman, S.~Clark, H.F.~Durrant-Whyte, and M.~Csorba. "A solution to the simultaneous localization and map building (SLAM) problem." \emph{IEEE Transactions on robotics and automation, 2001}., vol. 17, no. 3, pp.229-241.
+
+\bibitem{DecentralizedSLAM}
+K.Y.K.~Leung, T.D.~Barfoot, H.H.T.~Liu. "Distributed and Decentralized Cooperative Simultaneous Localization and Mapping for Dynamic and Sparse Robot Networks."\emph{Proceedings of the IEEE International Conference on Robotics and Automation, 2011}., pp. 3841-3847.
+
+\bibitem{HPA}
+A.~Botea, M.~Muller, J.~Schaeffer. "Near Optimal Hierarchical Path-Finding." \emph{Journal of Game Development, 2004}., pp. 7-28
+
+\bibitem{HierarchicalA}
+R.C.~Holte, M.B.~Perez, R.M.~Zimmer, A.J.~MacDonald. "Hierarchical A*: Searching Abstraction Hierarchies Efficiently." \emph{Proceedings of the Thirteenth national Conference on Articical Intelligence, 1996}., vol. 1, pp. 530-535.
+\end{thebibliography}
+
+\newpage
+
+\input{appendix.tex}
+
+\end{document}
