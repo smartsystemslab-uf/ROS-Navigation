@@ -8,3 +8,4 @@ ceiling_socket/*.cbp
 ceiling_socket/most*
 ceiling_socket/Makefile*
 central_server/blankCourseRun1/
+rest/*
