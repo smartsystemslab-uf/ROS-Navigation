@@ -80,7 +80,7 @@ scale_factor = 0.001
 data = scale_factor * np.array(data)
 print("Number of data points: {:,}".format(len(data)))
 
-plt.figure(figsize=(8, 9))
+plt.figure(figsize=(6, 8))
 plt.scatter(*np.array(data).T / scale_factor, s=5, alpha=1);
 
 
@@ -107,7 +107,7 @@ def draw_image(graph, show=True):
         plt.pause(0.0001)
         plt.show()
 
-def create_gng(max_nodes, step=0.2, n_start_nodes=2, max_edge_age=50):
+def create_gng(max_nodes, step=0.2, n_start_nodes=100, max_edge_age=50):
     return algorithms.GrowingNeuralGas(
         n_inputs=2,
         n_start_nodes=n_start_nodes,

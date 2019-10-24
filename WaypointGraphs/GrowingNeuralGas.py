@@ -74,11 +74,17 @@ def create_gng(max_nodes, step=0.2, n_start_nodes=2, max_edge_age=50):
         min_distance_for_update=0.01,
     )
 
+def gng_status(gng):
+    print('Current node count: ' + str(gng.graph.n_nodes))
+    print('Total training updates: ' + str(gng.n_updates_made))
+
 
 plt.ion()
 
 # Get image
-input_image = io.imread('test_binary_img.jpg')
+# input_image = io.imread('test_binary_img.jpg')
+input_image = io.imread('ExampleEnvironment.png')
+
 
 # Ensure binary
 input_image_grey = color.rgb2grey(input_image)
@@ -114,23 +120,59 @@ plt.imshow(input_image_binary_rescaled, cmap='gray');
 plt.pause(0.0001)
 plt.show()
 
+# Split environment to 3x3 grid
+M = 480
+N = 640
+tiles = [input_image_binary[x:x+M,y:y+N] for x in range(0,input_image_binary.shape[0],M) for y in range(0,input_image_binary.shape[1],N)]
+
+plt.figure(figsize=(6.4, 4.8))
+plt.subplot(331)
+plt.imshow(tiles[0], cmap='gray');
+plt.axis('off')
+plt.subplot(332)
+plt.imshow(tiles[1], cmap='gray');
+plt.axis('off')
+plt.subplot(333)
+plt.imshow(tiles[2], cmap='gray');
+plt.axis('off')
+plt.subplot(334)
+plt.imshow(tiles[3], cmap='gray');
+plt.axis('off')
+plt.subplot(335)
+plt.imshow(tiles[4], cmap='gray');
+plt.axis('off')
+plt.subplot(336)
+plt.imshow(tiles[5], cmap='gray');
+plt.axis('off')
+plt.subplot(337)
+plt.imshow(tiles[6], cmap='gray');
+plt.axis('off')
+plt.subplot(338)
+plt.imshow(tiles[7], cmap='gray');
+plt.axis('off')
+plt.subplot(339)
+plt.imshow(tiles[8], cmap='gray');
+plt.axis('off')
+
+plt.pause(0.0001)
+plt.show()
 
 
 # Get image as an array of free space pixels
-free_space_data, occupied_space_data = image_to_data(input_image_binary_rescaled)
+free_space_data, occupied_space_data = image_to_data(tiles[0])
 
 
 # Scaling factor allows us to reduce distance between data points
 scale_factor = 0.001
-# free_space_data = scale_factor * np.array(free_space_data)
-# occupied_space_data = scale_factor * np.array(occupied_space_data)
+free_space_data = scale_factor * np.array(free_space_data)
+occupied_space_data = scale_factor * np.array(occupied_space_data)
 print('Number of free space data points: {:,}'.format(len(free_space_data)))
 
 # Show scatter plot of whitespace pixels
 plt.figure(figsize=(9, 8))
 colors = itertools.cycle(['r', 'b', 'g'])
-plt.scatter(*np.array(occupied_space_data).T , s=1, alpha=1, color=next(colors));
-plt.scatter(*np.array(free_space_data).T , s=1, alpha=1, color=next(colors));
+plt.scatter(*np.array(occupied_space_data).T / scale_factor , s=1, alpha=1, color=next(colors));
+plt.scatter(*np.array(free_space_data).T / scale_factor , s=1, alpha=1, color=next(colors));
 
 plt.pause(0.0001)
 plt.show()
@@ -142,9 +184,13 @@ utils.reproducible()
 # Create a Grwoing Nerual Gas network
 gng = create_gng(max_nodes=1000)
 
+
 for epoch in range(20):
     gng.train(free_space_data, epochs=1)
+    gng_status(gng)
 
     # Plot images after each iteration in order to see training progress
-    plt.figure(figsize=(5.5, 6))
+    plt.figure(figsize=(6.4, 4.8))
+    plt.scatter(*np.array(occupied_space_data).T , s=1, alpha=1, color=next(colors));
+
     draw_image(gng.graph)
