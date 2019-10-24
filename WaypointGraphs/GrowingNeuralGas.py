@@ -11,6 +11,8 @@ from skimage import color, data, io, img_as_float
 from skimage.filters import threshold_otsu, threshold_local, gaussian
 from skimage.transform import rescale, resize, downscale_local_mean
 
+
+
 CURRENT_DIR = os.path.abspath(os.path.dirname(__name__))
 LIBRARY_DIR = os.path.join(CURRENT_DIR, '..', '..')
 
@@ -83,22 +85,24 @@ plt.ion()
 
 # Get image
 # input_image = io.imread('test_binary_img.jpg')
-input_image = io.imread('ExampleEnvironment.png')
-
+# input_image = io.imread('ExampleEnvironment.png')
+input_image = io.imread('3x3CameraGridEnvironment.png')
+print('Original image size: ' + str(input_image.shape))
 
 # Ensure binary
 input_image_grey = color.rgb2grey(input_image)
+print('Greyscsale image size: ' + str(input_image_grey.shape))
 
-# Show original and resulting processed images
-plt.figure(figsize=(16, 6))
-
-plt.subplot(141)
-plt.title('Original image')
-plt.imshow(input_image)
-
-plt.subplot(142)
-plt.title('Greyscaled image')
-plt.imshow(input_image_grey, cmap='gray')
+# # Show original and resulting processed images
+# plt.figure(figsize=(16, 6))
+#
+# plt.subplot(141)
+# plt.title('Original image')
+# plt.imshow(input_image)
+#
+# plt.subplot(142)
+# plt.title('Greyscaled image')
+# plt.imshow(input_image_grey, cmap='gray')
 
 # Increase threshold in order to add more
 # details to the binarized image
@@ -106,56 +110,61 @@ threshold_adjustment = 0.1
 thresh = threshold_otsu(input_image_grey) + threshold_adjustment
 input_image_binary = input_image_grey > thresh
 
-plt.subplot(143)
-plt.title('Binarized image')
-plt.imshow(input_image_binary, cmap='gray');
-
-# Rescale image for faster processing
-scaling_factor = 0.25
-input_image_binary_rescaled = rescale(input_image_binary, scaling_factor, anti_aliasing=False)
-plt.subplot(144)
-plt.title('Rescaled image (' + str(scaling_factor) + ')')
-plt.imshow(input_image_binary_rescaled, cmap='gray');
-
-plt.pause(0.0001)
-plt.show()
+# plt.subplot(143)
+# plt.title('Binarized image')
+# plt.imshow(input_image_binary, cmap='gray');
+#
+# # Rescale image for faster processing
+# scaling_factor = 0.25
+# input_image_binary_rescaled = rescale(input_image_binary, scaling_factor, anti_aliasing=False)
+# plt.subplot(144)
+# plt.title('Rescaled image (' + str(scaling_factor) + ')')
+# plt.imshow(input_image_binary_rescaled, cmap='gray');
+#
+# plt.pause(0.0001)
+# plt.show()
 
 # Split environment to 3x3 grid
 M = 480
 N = 640
-tiles = [input_image_binary[x:x+M,y:y+N] for x in range(0,input_image_binary.shape[0],M) for y in range(0,input_image_binary.shape[1],N)]
+tiles = [input_image_grey[x:x+M,y:y+N] for x in range(0,input_image_grey.shape[0],M) for y in range(0,input_image_grey.shape[1],N)]
 
 plt.figure(figsize=(6.4, 4.8))
 plt.subplot(331)
 plt.imshow(tiles[0], cmap='gray');
-plt.axis('off')
+#plt.axis('off')
 plt.subplot(332)
 plt.imshow(tiles[1], cmap='gray');
-plt.axis('off')
+#plt.axis('off')
 plt.subplot(333)
 plt.imshow(tiles[2], cmap='gray');
-plt.axis('off')
+# plt.axis('off')
 plt.subplot(334)
 plt.imshow(tiles[3], cmap='gray');
-plt.axis('off')
+#plt.axis('off')
 plt.subplot(335)
 plt.imshow(tiles[4], cmap='gray');
-plt.axis('off')
+#plt.axis('off')
 plt.subplot(336)
 plt.imshow(tiles[5], cmap='gray');
-plt.axis('off')
+#plt.axis('off')
 plt.subplot(337)
 plt.imshow(tiles[6], cmap='gray');
-plt.axis('off')
+#plt.axis('off')
 plt.subplot(338)
 plt.imshow(tiles[7], cmap='gray');
-plt.axis('off')
+#plt.axis('off')
 plt.subplot(339)
 plt.imshow(tiles[8], cmap='gray');
-plt.axis('off')
+#plt.axis('off')
 
 plt.pause(0.0001)
 plt.show()
+
+
+while 1:
+    continue
+
 
 
 # Get image as an array of free space pixels
