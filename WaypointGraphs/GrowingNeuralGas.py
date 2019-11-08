@@ -7,6 +7,8 @@ import glob
 import matplotlib.pyplot as plt
 import numpy as np
 
+from PIL import Image
+
 from neupy import algorithms, utils
 from skimage import color, data, io, img_as_float
 from skimage.filters import threshold_otsu, threshold_local, gaussian
@@ -60,7 +62,7 @@ def create_gng(max_nodes, step=0.2, n_start_nodes=2, max_edge_age=50):
         n_start_nodes=n_start_nodes,
 
         shuffle_data=True,
-        verbose=True,
+        verbose=False,
 
         step=step,
         neighbour_step=0.005,
@@ -75,8 +77,8 @@ def create_gng(max_nodes, step=0.2, n_start_nodes=2, max_edge_age=50):
     )
 
 def gng_status(gng):
-    print('Current node count: ' + str(gng.graph.n_nodes))
-    print('Total training updates: ' + str(gng.n_updates_made))
+    print('\tCurrent node count: ' + str(gng.graph.n_nodes))
+    print('\tTotal training updates: ' + str(gng.n_updates_made))
 
 def init_camera_grid(camera_grid_rows, camera_grid_cols):
     rows = [i for i in range(camera_grid_rows)]
@@ -84,23 +86,122 @@ def init_camera_grid(camera_grid_rows, camera_grid_cols):
     return {r : {c:None for c in columns} for r in rows}
 
 
+def save(filepath, fig=None):
+    '''Save the current image with no whitespace
+    Example filepath: "myfig.png" or r"C:\myfig.pdf"
+    '''
+    import matplotlib.pyplot as plt
+    if not fig:
+        fig = plt.gcf()
+
+
+def stitchImagesToGrid(output_filename, subview_directory, rows, cols, row_overlap, col_overlap):
+    subview_directory = subview_directory
+
+    subview_rows = rows
+    subview_cols = cols
+
+    row_overlap_pixels = row_overlap
+    col_overlap_pixels = col_overlap
+
+
+    subview_list = list(map(Image.open, sorted(glob.glob(subview_directory + '/subview_*'))))
+    # print(str(len(subview_list)) + ' subviews found in ' + subview_directory)
+
+    # for im in subview_list:
+    #     print(im.filename)
+
+    # All subview sizes exptected to be the same
+    subview_width = subview_list[0].size[0]
+    subview_height = subview_list[0].size[1]
+
+    output_width = (subview_cols * subview_width) - (col_overlap_pixels * (subview_cols - 1))
+    output_height = (subview_rows * subview_height) - (row_overlap_pixels * (subview_rows - 1))
+
+    grid = Image.new('L', (output_width, output_height), 'black').convert('RGB')
+    # grid.convert('P')
+
+
+    # Do the stitch
+    for row in range(0, subview_rows):
+        for col in range(0, subview_cols):
+            subview_index = row * subview_cols + col
+
+            offset_x = col * (subview_width - col_overlap_pixels)
+            offset_y = row * (subview_height - row_overlap_pixels)
+
+            grid.paste(subview_list[subview_index], (offset_x, offset_y))
+
+    # Add borders for each subview such that overlaps can be seen
+    for row in range(0, subview_rows):
+        for col in range(0, subview_cols):
+            subview_index = row * subview_cols + col
+
+            offset_x = col * (subview_width - col_overlap_pixels)
+            offset_y = row * (subview_height - row_overlap_pixels)
+
+            # Add border to each indiviual image
+            border_width = 2
+            for x in range(offset_x, offset_x + subview_list[subview_index].width):
+                for y in range(offset_y, offset_y + border_width):
+                    grid.putpixel((x, y), (0,0,0))
+                for y in range(offset_y + subview_list[subview_index].height - border_width, offset_y + subview_list[subview_index].height):
+                    grid.putpixel((x, y), (0,0,0))
+
+            for y in range(offset_y, offset_y + subview_list[subview_index].height):
+                for x in range(offset_x, offset_x + border_width):
+                    grid.putpixel((x, y), (0,0,0))
+                for x in range(offset_x + subview_list[subview_index].width - border_width, offset_x + subview_list[subview_index].width):
+                    grid.putpixel((x, y), (0,0,0))
+
+
+    grid.save(output_filename)
+
+
+
+
+
+
 
 
 plt.ion()
+
+
+
+
+# Vars
+camera_count = 9
+
+
+
+# Camera specific objects are held in lists and referenced by camera index
+camera_ids = []                         # Camera ids, establishes a camera's index in the proceeding lists
+camera_images = []                      # Images for each camera
+camera_free_space_data = []             # Data points corresponding to the location of free space pixels
+camera_occupied_space_data = []         # Data points corresponding to the location of free space pixels
+camera_gng_instances = []               # GrowingNeuralGas instances
+
+# environment_image = None                # Stitched image of all camera views
+# environment_free_space_data = []        # Data points corresponding to the location of free space pixels for all cameras
+# environment_occupied_space_data = []    # Data points corresponding to the location of free space pixels for all cameras
 
 
 # Create camera grid data structure
 camera_grid_rows = 3
 camera_grid_cols = 3
 
+# Camera grid only contains camera IDs
 print('Initializing camera grid...')
 camera_grid = init_camera_grid(camera_grid_rows, camera_grid_cols)
 
-# Data structures used later on similar layouts
-camera_grid_free_space_data = camera_grid
-camera_grid_occupied_space_data = camera_grid
 
-camera_grid_gng_instances = camera_grid
+
+for row in range(0, camera_grid_rows):
+    for col in range(0, camera_grid_cols):
+        camera_index = row * camera_grid_cols + col
+
+        camera_grid[row][col] = camera_index
+        camera_ids.append(camera_index)
 
 print('Camera grid:')
 for r in range(0, camera_grid_rows):
@@ -111,116 +212,172 @@ for r in range(0, camera_grid_rows):
 # Populate the camera_grid with a TestEnvironment
 #   Test Environment 1 is a 1880x1400 image popualated with some obstacles. The enviornment or image was
 #   generated such that it can be split into subviews, with a standard 640x480 resolution, of a 3x3 grid
-#   that includes an overlap of 20 pixels on rows and cols.
-print('Populating camera grid with TestEnvironment1 subviews...')
+#   that includes an overlap of 20 pixels on rows and cols. Indexed left to right, top to bottom
+print('Populating camera_images list with TestEnvironment1 subviews...')
 test_environment_directory = 'Images/TestEnvironments/Environment1'
 subview_directory = test_environment_directory + '/3x3'
 
 subview_filenames_list = list(sorted(glob.glob(subview_directory + '/*_subview_*')))
-print(str(len(subview_filenames_list)) + ' subviews found in ' + subview_directory)
+print('\t' + str(len(subview_filenames_list)) + ' subviews found in ' + subview_directory)
 for i in range(0, len(subview_filenames_list)):
     print('\t' + subview_filenames_list[i])
 
-# Open the subviews and add to the camera grid
-#   Subview index and camera index should be identical
-for r in range(0, camera_grid_rows):
-    for c in range(0, camera_grid_cols):
-        camera_index = r * camera_grid_cols + c
-        camera_grid[r][c] = io.imread(subview_filenames_list[camera_index])
+# Open the subviews and add to the camera_images list
+for camera_index in range(0, camera_count):
+    camera_images.append(io.imread(subview_filenames_list[camera_index]))
 
 
 
-# Preprocess camera_grid images
-for r in range(0, camera_grid_rows):
-    for c in range(0, camera_grid_cols):
 
-        # Ensure grayscale
-        greyscale = color.rgb2grey(camera_grid[r][c])
+# Preprocess camera images
+for camera_index in range(0, camera_count):
+    # Ensure grayscale
+    greyscale = color.rgb2grey(camera_images[camera_index])
 
-        # The above statement should work but only thresholding gives me true binary
-        threshold_adjustment = 0.1
-        thresh = threshold_otsu(greyscale) + threshold_adjustment
-        binary = greyscale > thresh
+    # The above statement should work but only thresholding gives me true binary
+    threshold_adjustment = 0.1
+    thresh = threshold_otsu(greyscale) + threshold_adjustment
+    binary = greyscale > thresh
 
-        # Scale image down
-        scaling_factor = 0.25
-        scaled_img = rescale(binary, scaling_factor, anti_aliasing=False)
+    # Scale image down
+    scaling_factor = 0.25
+    scaled_img = rescale(binary, scaling_factor, anti_aliasing=False)
 
-        camera_grid[r][c] = scaled_img
+    camera_images[camera_index] = scaled_img
 
-        # plt.imshow(camera_grid[r][c], cmap='gray')
-        # plt.pause(1)
-        # plt.show()
-
+    # plt.imshow(camera_grid[r][c], cmap='gray')
+    # plt.pause(1)
+    # plt.show()
 
 
 
 
 
 # Prepare for GNG
-for r in range(0, camera_grid_rows):
-    for c in range(0, camera_grid_cols):
+for camera_index in range(0, camera_count):
 
-        # Separate images as arrays of free space pixels and occupied space pixels
-        free_space_data, occupied_space_data = image_to_data(camera_grid[r][c])
+    # Separate images as arrays of free space pixels and occupied space pixels
+    free_space_data, occupied_space_data = image_to_data(camera_images[camera_index])
 
+    # print('Number of free space data points: {:,}'.format(len(free_space_data)))
 
-        # Scaling factor allows us to reduce distance between data points
-        scale_factor = 0.001
-        free_space_data = scale_factor * np.array(free_space_data)
-        occupied_space_data = scale_factor * np.array(occupied_space_data)
-        print('Number of free space data points: {:,}'.format(len(free_space_data)))
+    # # Show scatter plot of free and occupied space
+    # plt.figure(figsize=(9, 8))
+    # colors = itertools.cycle(['r', 'b'])
+    # plt.scatter(*np.array(occupied_space_data).T, s=1, alpha=1, color=next(colors));   # RED
+    # plt.scatter(*np.array(free_space_data).T, s=1, alpha=1, color=next(colors));       # BLUE
 
+    # Save free space data
+    camera_free_space_data.append(free_space_data)
+    camera_occupied_space_data.append(occupied_space_data)
 
-
-
-
-        # Show scatter plot of free and occupied space
-        plt.figure(figsize=(9, 8))
-        colors = itertools.cycle(['r', 'b'])
-        plt.scatter(*np.array(occupied_space_data).T/scale_factor, s=1, alpha=1, color=next(colors));   # RED
-        plt.scatter(*np.array(free_space_data).T/scale_factor, s=1, alpha=1, color=next(colors));       # BLUE
-
-
-
-        # Save free space data
-        # print(free_space_data)
-        camera_grid_free_space_data[r][c] = free_space_data
-        # print(camera_grid_free_space_data[r][c])
-
-        camera_grid_occupied_space_data[r][c] = occupied_space_data
-
-
-
-
-
-        # plt.pause(5)
-        # plt.show()
 
 
 # Neupy func for using reproducible seeds, makes results reproducible
 utils.reproducible()
 
-for r in range(0, camera_grid_rows):
-    for c in range(0, camera_grid_cols):
+for camera_index in range(0, camera_count):
+    camera_gng_instances.append(create_gng(max_nodes=1000))
 
-        # New instance of gng for each subview
-        camera_grid_gng_instances[r][c] = create_gng(max_nodes=1000)
+# Saving images
+waypoint_image_directory = test_environment_directory + '/3x3/WaypointGeneration'
+if not os.path.exists(waypoint_image_directory):
+    os.makedirs(waypoint_image_directory)
 
-
-# Train
+# Training
 for epoch in range(20):
+
     print('Training epoch: ' + str(epoch))
 
-    for r in range(0, camera_grid_rows):
-        for c in range(0, camera_grid_cols):
+    # New folder for each epoch
+    current_epoch_directory = waypoint_image_directory + '/Epoch_' + str(epoch)
+    if not os.path.exists(current_epoch_directory):
+        os.makedirs(current_epoch_directory)
 
-            camera_index = r * camera_grid_cols + c
-            print('\tCamera index: ' + str(camera_index))
+    for camera_index in range(0, camera_count):
+        fig = plt.figure(figsize=(6.4, 4.8))
+        plt.xticks([], [])
+        plt.yticks([], [])
+
+        # Plot occupied space for reference
+        plt.scatter(*np.array(camera_occupied_space_data[camera_index]).T , s=25, alpha=1, color='red');
 
 
-            camera_grid_gng_instances[r][c].train(camera_grid_free_space_data[r][c], epochs=1)
-            gng_status(camera_grid_gng_instances[r][c])
+        camera_gng_instances[camera_index].train(camera_free_space_data[camera_index], epochs=1)
+        print('Camera ' + str(camera_index) + ' gng status:')
+        gng_status(camera_gng_instances[camera_index])
+
+        # Draw graph of gng instance in free space
+        for node_1, node_2 in camera_gng_instances[camera_index].graph.edges:
+            weights = np.concatenate([node_1.weight, node_2.weight])
+            line, = plt.plot(*weights.T, color='black')
+            plt.setp(line, linewidth=0.2, color='black')
+
+
+        # Draw a border for visualizing subview in stitched image
+        # line = plt.Line2D((0, 0), (0, 480), lw=2.5)
+        # plt.gca().add_line(line)
+        # line = plt.Line2D((0, 480), (640, 480), lw=2.5)
+        # plt.gca().add_line(line)
+        # line = plt.Line2D((0, 0), (640, 0), lw=2.5)
+        # plt.gca().add_line(line)
+        # line = plt.Line2D((640, 0), (640, 480), lw=2.5)
+        # plt.gca().add_line(line)
+
+
+        # Save this figure
+        waypoint_image_filename = current_epoch_directory + '/subview_' + str(camera_index) + '.png'
+
+        # Credit to https://stackoverflow.com/a/53516034/11445242
+        #   I spent much too much time on making a decent image with matplotlib
+        plt.subplots_adjust(0,0,1,1,0,0)
+        for ax in fig.axes:
+            ax.axis('off')
+            ax.margins(0,0)
+            ax.xaxis.set_major_locator(plt.NullLocator())
+            ax.yaxis.set_major_locator(plt.NullLocator())
+        fig.savefig(waypoint_image_filename, pad_inches = 0, bbox_inches='tight')
+
+        plt.close(fig)
+        # plt.pause(0.0001)
+        # plt.show()
+
+
+
+    # At the end of each epoch, stitch all the produced images for a nice visualization
+    print('Stitching gng graphs for epoch ' + str(epoch))
+
+    environment_waypoint_image_directory = waypoint_image_directory + '/StitchedImages'
+    if not os.path.exists(environment_waypoint_image_directory):
+        os.makedirs(environment_waypoint_image_directory)
+
+    environment_waypoint_image_filename = environment_waypoint_image_directory + '/Epoch_' + '{0:0=2d}'.format(epoch) + '_environment.png'
+    stitchImagesToGrid(environment_waypoint_image_filename, current_epoch_directory, 3, 3, 20, 20)
+
+
+
+
+
+# for r in range(0, camera_grid_rows):
+#     for c in range(0, camera_grid_cols):
+#
+#         # New instance of gng for each subview
+#         camera_grid_gng_instances[r][c] = create_gng(max_nodes=1000)
+#
+#
+# # Train
+# for epoch in range(20):
+#     print('Training epoch: ' + str(epoch))
+#
+#     for r in range(0, camera_grid_rows):
+#         for c in range(0, camera_grid_cols):
+#
+#             camera_index = r * camera_grid_cols + c
+#             print('\tCamera index: ' + str(camera_index))
+#
+#
+#             camera_grid_gng_instances[r][c].train(camera_grid_free_space_data[r][c], epochs=1)
+#             gng_status(camera_grid_gng_instances[r][c])
 
 
 

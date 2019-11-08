@@ -44,7 +44,7 @@ output_height = (subview_rows * subview_height) - (row_overlap_pixels * (subview
 grid = Image.new('L', (output_width, output_height), 'black')
 
 
-# Do the splits
+# Do the stitch
 for row in range(0, subview_rows):
     for col in range(0, subview_cols):
         subview_index = row * subview_cols + col
