@@ -134,142 +134,6 @@ def stitchGNGImagesToGrid(output_filename, subview_directory, rows, cols, row_ov
             grid.paste(subview_list[subview_index], (offset_x, offset_y))
 
 
-
-
-    # # Identify possible transition regions
-    # #   Looks for any and all free space in the overlap regions of subviews or cameras
-    # for row in range(0, subview_rows):
-    #     for col in range(0, subview_cols):
-    #         subview_index = row * subview_cols + col
-    #
-    #         offset_x = col * (subview_width - col_overlap_pixels)
-    #         offset_y = row * (subview_height - row_overlap_pixels)
-    #
-    #         for x in range(offset_x, offset_x + subview_list[subview_index].width):
-    #             # Possible top transition regions
-    #             for y in range(offset_y, offset_y + row_overlap_pixels):
-    #                 if grid.getpixel((x,y)) == (255,255,255):
-    #                     grid.putpixel((x, y), (255,255,0)) # Yellow
-    #
-    #             # Possible bottom transition regions
-    #             for y in range(offset_y + subview_list[subview_index].height - row_overlap_pixels, offset_y + subview_list[subview_index].height):
-    #                 if grid.getpixel((x,y)) == (255,255,255):
-    #                     grid.putpixel((x, y), (255,255,0)) # Yellow
-    #
-    #         for y in range(offset_y, offset_y + subview_list[subview_index].height):
-    #             # Possible left transition regions
-    #             for x in range(offset_x, offset_x + col_overlap_pixels):
-    #                 if grid.getpixel((x,y)) == (255,255,255):
-    #                     grid.putpixel((x, y), (255,255,0)) # Yellow
-    #
-    #             # Possible right transition regions
-    #             for x in range(offset_x + subview_list[subview_index].width - col_overlap_pixels, offset_x + subview_list[subview_index].width):
-    #                 if grid.getpixel((x,y)) == (255,255,255):
-    #                     grid.putpixel((x, y), (255,255,0)) # Yellow
-    #
-    #
-    # # Identify valid transition regions
-    # #   Looks for free space that is the specified height or width for corresponding top/bottom and left/right transition regions respecitvely
-    # for row in range(0, subview_rows):
-    #     for col in range(0, subview_cols):
-    #         subview_index = row * subview_cols + col
-    #
-    #         offset_x = col * (subview_width - col_overlap_pixels)
-    #         offset_y = row * (subview_height - row_overlap_pixels)
-    #
-    #         top_transition_regions = []
-    #         bottom_transition_regions = []
-    #         left_transition_regions = []
-    #         right_transition_regions = []
-    #
-    #         current_top_transition_region = []
-    #         current_bottom_transition_region = []
-    #         current_left_transition_region = []
-    #         current_right_transition_region = []
-    #
-    #
-    #         # Looking for columns of pixels of only freespace in overlap regions
-    #         for x in range(offset_x, offset_x + subview_list[subview_index].width):
-    #
-    #             # Valid top transition regions
-    #             valid_col = True
-    #             for y in range(offset_y, offset_y + row_overlap_pixels):
-    #                 if grid.getpixel((x,y)) == (0,0,0):
-    #                     valid_col = False
-    #             # Add col to transition region
-    #             if valid_col:
-    #                 for y in range(offset_y, offset_y + row_overlap_pixels):
-    #                     grid.putpixel((x, y), (0,255,0)) # Green
-    #                     current_top_transition_region.append((x,y))
-    #             # Otherwise if we have previously added some cols, finish up a region and add to set
-    #             else:
-    #                 if current_top_transition_region:
-    #                     top_transition_regions.append(current_top_transition_region)
-    #                     current_top_transition_region = []
-    #
-    #
-    #             # Valid bottom transition regions
-    #             valid_col = True
-    #             for y in range(offset_y + subview_list[subview_index].height - row_overlap_pixels, offset_y + subview_list[subview_index].height):
-    #                 if grid.getpixel((x,y)) == (0,0,0):
-    #                     valid_col = False
-    #
-    #             if valid_col:
-    #                 for y in range(offset_y + subview_list[subview_index].height - row_overlap_pixels, offset_y + subview_list[subview_index].height):
-    #                     grid.putpixel((x, y), (0,255,0)) # Green
-    #                     current_bottom_transition_region.append((x,y))
-    #             # Otherwise if we have previously added some cols, finish up a region and add to set
-    #             else:
-    #                 if current_bottom_transition_region:
-    #                     bottom_transition_regions.append(current_bottom_transition_region)
-    #                     current_bottom_transition_region = []
-    #
-    #
-    #         # Looking for rows of pixels of only freespace in overlap regions
-    #         for y in range(offset_y, offset_y + subview_list[subview_index].height):
-    #
-    #             # Valid left transition regions
-    #             valid_row = True
-    #             for x in range(offset_x, offset_x + col_overlap_pixels):
-    #                 if grid.getpixel((x,y)) == (0,0,0):
-    #                     valid_row = False
-    #
-    #             if valid_row:
-    #                 for x in range(offset_x, offset_x + col_overlap_pixels):
-    #                     grid.putpixel((x, y), (0,255,0)) # Green
-    #                     current_left_transition_region.append((x,y))
-    #             # Otherwise if we have previously added some rows, finish up a region and add to set
-    #             else:
-    #                 if current_left_transition_region:
-    #                     left_transition_regions.append(current_left_transition_region)
-    #                     current_left_transition_region = []
-    #
-    #
-    #             # Valid right transition regions
-    #             valid_row = True
-    #             for x in range(offset_x + subview_list[subview_index].width - col_overlap_pixels, offset_x + subview_list[subview_index].width):
-    #                 if grid.getpixel((x,y)) == (0,0,0):
-    #                     valid_row = False
-    #             if valid_row:
-    #                 for x in range(offset_x + subview_list[subview_index].width - col_overlap_pixels, offset_x + subview_list[subview_index].width):
-    #                     grid.putpixel((x, y), (0,255,0)) # Green
-    #                     current_right_transition_region.append((x,y))
-    #             # Otherwise if we have previously added some rows, finish up a region and add to set
-    #             else:
-    #                 if current_right_transition_region:
-    #                     right_transition_regions.append(current_right_transition_region)
-    #                     current_right_transition_region = []
-    #
-    #
-    #         # Summary of transition regions
-    #         print('Subview ' + str(subview_index) + ':')
-    #         print('\t# of valid top transition regions: ' + str(len(top_transition_regions)))
-    #         print('\t# of valid bottom transition regions: ' + str(len(bottom_transition_regions)))
-    #         print('\t# of valid left transition regions: ' + str(len(left_transition_regions)))
-    #         print('\t# of valid right transition regions: ' + str(len(right_transition_regions)))
-
-
-
     # Add borders for each subview such that overlaps can be seen
     border_color = (200,0,0)
     for row in range(0, subview_rows):
@@ -303,11 +167,19 @@ def stitchGNGImagesToGrid(output_filename, subview_directory, rows, cols, row_ov
 
 
 
+# Find centroid of a region of points
+#   Region is a list of points (x,y)
+def FindCentroid(region):
+    x = [p[0] for p in region]
+    y = [p[1] for p in region]
+    return (sum(x) / len(region), sum(y) / len(region))
+
+
 
 #   Possible transition regions in overlapping regions are yellow
 #   Valid transition regions are green
 #   Transition points are blue
-def FindTransitionRegions(output_filename, subview_directory, rows, cols, row_overlap, col_overlap):
+def FindTransitionRegions(camera_transition_regions, camera_transition_points, output_filename, subview_directory, rows, cols, row_overlap, col_overlap):
     subview_directory = subview_directory
 
     subview_rows = rows
@@ -367,6 +239,11 @@ def FindTransitionRegions(output_filename, subview_directory, rows, cols, row_ov
             current_right_transition_region = []
 
             transition_region_min_pixels = 10
+
+            top_transition_points = []
+            bottom_transition_points = []
+            left_transition_points = []
+            right_transition_points = []
 
 
             # Looking for columns of pixels of only freespace in overlap regions
@@ -443,47 +320,69 @@ def FindTransitionRegions(output_filename, subview_directory, rows, cols, row_ov
                         current_right_transition_region = []
 
 
-            # Summary of transition regions
-            print('Subview ' + str(subview_index) + ':')
-            print('\t# of valid top transition regions: ' + str(len(top_transition_regions)))
-            print('\t# of valid bottom transition regions: ' + str(len(bottom_transition_regions)))
-            print('\t# of valid left transition regions: ' + str(len(left_transition_regions)))
-            print('\t# of valid right transition regions: ' + str(len(right_transition_regions)))
+            # # Summary of transition regions
+            # print('Subview ' + str(subview_index) + ':')
+            # print('\t# of valid top transition regions: ' + str(len(top_transition_regions)))
+            # print('\t# of valid bottom transition regions: ' + str(len(bottom_transition_regions)))
+            # print('\t# of valid left transition regions: ' + str(len(left_transition_regions)))
+            # print('\t# of valid right transition regions: ' + str(len(right_transition_regions)))
+
+            # Save transition regions for each camera or subview
+            camera_transition_regions[subview_index].append(top_transition_regions)
+            camera_transition_regions[subview_index].append(bottom_transition_regions)
+            camera_transition_regions[subview_index].append(left_transition_regions)
+            camera_transition_regions[subview_index].append(right_transition_regions)
+
+
 
 
             # Mark the centroid of each transition region - this is our transition point
             transition_point_marking_radius = 3
             for region in top_transition_regions:
-                x = [p[0] for p in region]
-                y = [p[1] for p in region]
-                centroid = (int(sum(x) / len(region)), int(sum(y) / len(region)))
+                centroid = FindCentroid(region)
+                top_transition_points.append(centroid)
+
+                # Draw centroid marking
+                centroid = (int(centroid[0]), int(centroid[1]))
                 for square_x in range(centroid[0]-transition_point_marking_radius, centroid[0]+transition_point_marking_radius+1):
                     for square_y in range(centroid[1]-transition_point_marking_radius, centroid[1]+transition_point_marking_radius+1):
                         grid.putpixel((square_x, square_y), (0,0,255)) # Blue
 
             for region in bottom_transition_regions:
-                x = [p[0] for p in region]
-                y = [p[1] for p in region]
-                centroid = (int(sum(x) / len(region)), int(sum(y) / len(region)))
+                centroid = FindCentroid(region)
+                bottom_transition_points.append(centroid)
+
+                # Draw centroid marking
+                centroid = (int(centroid[0]), int(centroid[1]))
                 for square_x in range(centroid[0]-transition_point_marking_radius, centroid[0]+transition_point_marking_radius+1):
                     for square_y in range(centroid[1]-transition_point_marking_radius, centroid[1]+transition_point_marking_radius+1):
                         grid.putpixel((square_x, square_y), (0,0,255)) # Blue
 
             for region in left_transition_regions:
-                x = [p[0] for p in region]
-                y = [p[1] for p in region]
-                centroid = (int(sum(x) / len(region)), int(sum(y) / len(region)))
+                centroid = FindCentroid(region)
+                left_transition_points.append(centroid)
+
+                # Draw centroid marking
+                centroid = (int(centroid[0]), int(centroid[1]))
                 for square_x in range(centroid[0]-transition_point_marking_radius, centroid[0]+transition_point_marking_radius+1):
                     for square_y in range(centroid[1]-transition_point_marking_radius, centroid[1]+transition_point_marking_radius+1):
                         grid.putpixel((square_x, square_y), (0,0,255)) # Blue
 
             for region in right_transition_regions:
-                x = [p[0] for p in region]
-                y = [p[1] for p in region]
-                centroid = (int(sum(x) / len(region)), int(sum(y) / len(region)))
+                centroid = FindCentroid(region)
+                right_transition_points.append(centroid)
+
+                # Draw centroid marking
+                centroid = (int(centroid[0]), int(centroid[1]))
                 for square_x in range(centroid[0]-transition_point_marking_radius, centroid[0]+transition_point_marking_radius+1):
                     for square_y in range(centroid[1]-transition_point_marking_radius, centroid[1]+transition_point_marking_radius+1):
                         grid.putpixel((square_x, square_y), (0,0,255)) # Blue
+
+            # Save transition points for each camera or subview
+            camera_transition_points[subview_index].append(top_transition_points)
+            camera_transition_points[subview_index].append(bottom_transition_points)
+            camera_transition_points[subview_index].append(left_transition_points)
+            camera_transition_points[subview_index].append(right_transition_points)
 
 
     # Identify possible transition regions
@@ -531,7 +430,7 @@ def FindTransitionRegions(output_filename, subview_directory, rows, cols, row_ov
             offset_y = row * (subview_height - row_overlap_pixels)
 
             # Add borders
-            border_width = 1
+            border_width = 2
             for x in range(offset_x, offset_x + subview_list[subview_index].width):
                 # Top border for each subview
                 for y in range(offset_y, offset_y + border_width):
@@ -577,9 +476,6 @@ camera_free_space_data = []             # Data points corresponding to the locat
 camera_occupied_space_data = []         # Data points corresponding to the location of free space pixels
 camera_gng_instances = []               # GrowingNeuralGas instances
 
-# environment_image = None                # Stitched image of all camera views
-# environment_free_space_data = []        # Data points corresponding to the location of free space pixels for all cameras
-# environment_occupied_space_data = []    # Data points corresponding to the location of free space pixels for all cameras
 
 
 # Create camera grid data structure
@@ -590,6 +486,12 @@ camera_grid_cols = 3
 print('Initializing camera grid...')
 camera_grid = init_camera_grid(camera_grid_rows, camera_grid_cols)
 
+# Transition regions for each camera
+camera_transition_regions = []
+
+# Transition points for each camera
+camera_transition_points = []
+
 
 
 for row in range(0, camera_grid_rows):
@@ -598,6 +500,10 @@ for row in range(0, camera_grid_rows):
 
         camera_grid[row][col] = camera_index
         camera_ids.append(camera_index)
+
+        # Add transition region list and transition point list for each camera
+        camera_transition_regions.append([])    # List will be populated with Top, Bottom, Left, Right transition regions
+        camera_transition_points.append([])    # List will be populated with Top, Bottom, Left, Right transition regions
 
 print('Camera grid:')
 for r in range(0, camera_grid_rows):
@@ -626,10 +532,20 @@ for i in range(0, len(subview_filenames_list)):
 print('Stitching subviews...')
 
 environment_transition_regions_filename = subview_directory + '/Environment_Transition_Regions.png'
-FindTransitionRegions(environment_transition_regions_filename, subview_directory, 3, 3, 20, 20)
+FindTransitionRegions(camera_transition_regions, camera_transition_points, environment_transition_regions_filename, subview_directory, 3, 3, 20, 20)
 
-while 1:
-    continue
+# Summary of transition regions
+for subview_index in range(0, len(camera_ids)):
+    print('Subview ' + str(subview_index) + ':')
+    print('\t# of valid top transition regions: '       + str(len(camera_transition_regions[subview_index][0])))
+    print('\t# of valid bottom transition regions: '    + str(len(camera_transition_regions[subview_index][1])))
+    print('\t# of valid left transition regions: '      + str(len(camera_transition_regions[subview_index][2])))
+    print('\t# of valid right transition regions: '     + str(len(camera_transition_regions[subview_index][3])))
+    print('\t# of valid top transition points: '        + str(len(camera_transition_points[subview_index][0])))
+    print('\t# of valid bottom transition points: '     + str(len(camera_transition_points[subview_index][1])))
+    print('\t# of valid left transition points: '       + str(len(camera_transition_points[subview_index][2])))
+    print('\t# of valid right transition points: '      + str(len(camera_transition_points[subview_index][3])))
+
 
 
 
@@ -661,11 +577,6 @@ for camera_index in range(0, camera_count):
     # plt.imshow(camera_grid[r][c], cmap='gray')
     # plt.pause(1)
     # plt.show()
-
-
-
-
-# Get transition regions for the camera grid
 
 
 
