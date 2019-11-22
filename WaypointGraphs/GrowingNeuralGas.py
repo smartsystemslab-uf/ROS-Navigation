@@ -95,8 +95,10 @@ def save(filepath, fig=None):
         fig = plt.gcf()
 
 
-#   Image borders are red
-def stitchGNGImagesToGrid(output_filename, subview_directory, rows, cols, row_overlap, col_overlap):
+# Valid transition regions are green
+#   Transition points are blue
+#   Camera fields of view borders are red
+def stitchGNGImagesToGrid(camera_transition_regions, camera_transition_points, output_filename, subview_directory, rows, cols, row_overlap, col_overlap):
     subview_directory = subview_directory
 
     subview_rows = rows
@@ -132,6 +134,29 @@ def stitchGNGImagesToGrid(output_filename, subview_directory, rows, cols, row_ov
             offset_y = row * (subview_height - row_overlap_pixels)
 
             grid.paste(subview_list[subview_index], (offset_x, offset_y))
+
+
+
+    # Draw transition regions
+    transition_region_color = (0,255,0) # Green
+    for transition_regions in camera_transition_regions:
+        for border_regions in transition_regions:
+            for region in border_regions:
+                for x,y in region:
+                    grid.putpixel((x, y), transition_region_color)
+
+
+    # Draw transition points
+    transition_point_marking_radius = 3
+    transition_point_color = (0,0,255) # Blue
+    for transition_points in camera_transition_points:
+        for border_transition_points in transition_points:
+            for x,y in border_transition_points:
+                # Draw centroid marking
+                centroid = (int(x), int(y))
+                for square_x in range(centroid[0]-transition_point_marking_radius, centroid[0]+transition_point_marking_radius+1):
+                    for square_y in range(centroid[1]-transition_point_marking_radius, centroid[1]+transition_point_marking_radius+1):
+                        grid.putpixel((square_x, square_y), transition_point_color) # Blue
 
 
     # Add borders for each subview such that overlaps can be seen
@@ -176,9 +201,10 @@ def FindCentroid(region):
 
 
 
-#   Possible transition regions in overlapping regions are yellow
+# Possible transition regions in overlapping regions are yellow
 #   Valid transition regions are green
 #   Transition points are blue
+#   Camera fields of view borders are red
 def FindTransitionRegions(camera_transition_regions, camera_transition_points, output_filename, subview_directory, rows, cols, row_overlap, col_overlap):
     subview_directory = subview_directory
 
@@ -671,7 +697,7 @@ for epoch in range(20):
         os.makedirs(environment_waypoint_image_directory)
 
     environment_waypoint_image_filename = environment_waypoint_image_directory + '/Epoch_' + '{0:0=2d}'.format(epoch) + '_environment.png'
-    stitchGNGImagesToGrid(environment_waypoint_image_filename, current_epoch_directory, 3, 3, 20, 20)
+    stitchGNGImagesToGrid(camera_transition_regions, camera_transition_points, environment_waypoint_image_filename, current_epoch_directory, 3, 3, 20, 20)
 
 
 
