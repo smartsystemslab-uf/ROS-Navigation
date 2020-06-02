@@ -24,7 +24,7 @@ def saveas(name):
 
 
 # astro = img_as_float(data.astronaut())
-astro = io.imread('test_binary_img.jpg')
+astro = io.imread('Images/greyscale_test_image_single_camera.jpg')
 
 # astro = astro[30:180, 150:300]
 plt.imshow(astro);

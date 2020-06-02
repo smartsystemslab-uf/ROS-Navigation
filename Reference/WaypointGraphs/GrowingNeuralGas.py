@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 import itertools
 import glob
@@ -649,6 +650,7 @@ for epoch in range(20):
         os.makedirs(current_epoch_directory)
 
     for camera_index in range(0, camera_count):
+    # for camera_index in range(0, 1):
 
         # Generate a subview image that shows the waypoint graph in the free space
         fig = plt.figure(figsize=(6.4, 4.8))
@@ -658,9 +660,14 @@ for epoch in range(20):
         # Plot occupied space for reference
         plt.scatter(*np.array(camera_occupied_space_data[camera_index]).T , s=25, alpha=1, color='black');
 
+        start = time.time()
         camera_gng_instances[camera_index].train(camera_free_space_data[camera_index], epochs=1)
+        end = time.time()
+
+
         print('Camera ' + str(camera_index) + ' gng status:')
         gng_status(camera_gng_instances[camera_index])
+        print('\tRuntime of latest training epoch: ' + str(end-start) + ' seconds')
 
         # Draw graph of gng instance in free space
         for node_1, node_2 in camera_gng_instances[camera_index].graph.edges:
