@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
 from visualization_msgs.msg import Marker
-from visualization_msgs.msg import MarkerArray
 import rospy
 import math
 
-topic = 'visualization_marker'
-publisher = rospy.Publisher(topic, Marker, queue_size=10)
+topic = 'camera_markers'
+publisher = rospy.Publisher(topic, Marker, queue_size=0)
 
-rospy.init_node('Camera Marker')
+rospy.init_node('CameraMarker')
 
 while not rospy.is_shutdown():
 
@@ -26,7 +25,7 @@ while not rospy.is_shutdown():
    marker.pose.orientation.w = 1.0
    marker.pose.position.x = 0
    marker.pose.position.y = 0
-   marker.pose.position.z = 2.57
+   marker.pose.position.z = 0
 
    # Publish the MarkerArray
    publisher.publish(marker)
