@@ -1,0 +1,5 @@
+<launch>
+
+<node pkg="tf" type="static_transform_publisher" name="WebcamTFPublisher" args="0 0 2.57 0 0 0 /world /webcam 100"/>
+
+</launch>
