@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('visualization_marker_tutorials')
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 import rospy
 import math
 
 topic = 'visualization_marker_array'
-publisher = rospy.Publisher(topic, MarkerArray)
+publisher = rospy.Publisher(topic, MarkerArray, queue_size=0)
 
-rospy.init_node('register')
+rospy.init_node('MarkerArrayTest')
 
 markerArray = MarkerArray()
 

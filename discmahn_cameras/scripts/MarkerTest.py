@@ -1,20 +1,15 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('visualization_marker_tutorials')
 from visualization_msgs.msg import Marker
-from visualization_msgs.msg import MarkerArray
 import rospy
 import math
 
-topic = 'visualization_marker_array'
-publisher = rospy.Publisher(topic, MarkerArray)
+topic = 'visualization_marker'
+publisher = rospy.Publisher(topic, Marker, queue_size=0)
 
-rospy.init_node('register')
-
-markerArray = MarkerArray()
+rospy.init_node('MarkerTest')
 
 count = 0
-MARKERS_MAX = 100
 
 while not rospy.is_shutdown():
 
@@ -34,21 +29,8 @@ while not rospy.is_shutdown():
    marker.pose.position.y = math.cos(count / 40.0)
    marker.pose.position.z = math.cos(count / 30.0)
 
-   # We add the new marker to the MarkerArray, removing the oldest
-   # marker from it when necessary
-   if(count > MARKERS_MAX):
-       markerArray.markers.pop(0)
-
-   markerArray.markers.append(marker)
-
-   # Renumber the marker IDs
-   id = 0
-   for m in markerArray.markers:
-       m.id = id
-       id += 1
-
    # Publish the MarkerArray
-   publisher.publish(markerArray)
+   publisher.publish(marker)
 
    count += 1
 
