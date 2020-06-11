@@ -4,7 +4,7 @@
     <param name="model_path" value="$(find robot_tracking)/models" />
     <param name="model_name" value="robot_qr_code" />
     <param name="debug_display" value="True" />
-    <param name="tracker_ref_frame" value="webcam_image" />
+    <param name="tracker_ref_frame" value="/webcam_image" />
 
 
     <remap from="/visp_auto_tracker/camera_info" to="/webcam/camera_info"/>
