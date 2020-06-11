@@ -27,8 +27,10 @@
         <arg name="visualize" value="false" />
    </include>
 
-  <node pkg="tf" type="static_transform_publisher" name="WebcamTFPublisher" args="0 0 2.57 0 0 3.14 /world /webcam 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="WebcamTFPublisher" args="0 0 2.57 0 0 3.14 /map /webcam 100"/>
   <node pkg="discmahn_cameras" type="ShowWebcamMarker.py" name="WebcamMarker"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="WebcamImageTFPublisher" args="0 0 0 0 0 0 /map /webcam_image 100"/>
 
 </launch>
 
